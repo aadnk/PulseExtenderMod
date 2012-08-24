@@ -1,0 +1,31 @@
+name: PulseExtenderMod
+version: 1.0.0
+description: This plugin allows you to customize the duration of a button press. 
+author: Comphenix
+website: http://www.comphenix.net/PulseExtenderMod
+
+main: com.comphenix.pulse.PulseExtenderMod
+database: false
+
+commands:
+  buttonlength:
+    description: Sets the duration a button is active when pressed.
+    usage: /<command> [new duration in seconds]
+    aliases: [blen]
+    permission: pulseextender.admin
+    permission-message: You don't have <permission>
+  pulseextender:
+    description: Reloads the pulse extender configuration.
+    usage: /<command>
+    aliases: [pulseext]
+    permission: pulseextender.admin
+    permission-message: You don't have <permission>
+  
+permissions:
+  pulseextender.*:
+    description: Gives access to everything.
+    children:
+      pulseextender.admin: true
+  pulseextender.admin:
+    description: Allows altering the global button length setting.
+    default: op
