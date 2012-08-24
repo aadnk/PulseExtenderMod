@@ -1,5 +1,5 @@
 /*
- *  ExperienceMod - Bukkit server plugin for modifying the experience system in Minecraft.
+ *  PulseExtenderMod - Allows you to customize the duration a button is down in Bukkit.
  *  Copyright (C) 2012 Kristian S. Stangeland
  *
  *  This program is free software; you can redistribute it and/or modify it under the terms of the 
