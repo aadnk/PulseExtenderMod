@@ -22,6 +22,7 @@ import java.util.Random;
 
 import net.minecraft.server.BlockButton;
 import net.minecraft.server.World;
+import net.minecraft.server.WorldServer;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.bukkit.block.Block;
@@ -74,16 +75,17 @@ public class Button {
 		try {
 			
 			CraftWorld craftWorld = (CraftWorld) block.getWorld();
-			BlockButton notchButton = (BlockButton) net.minecraft.server.Block.byId[143];
+			WorldServer server = craftWorld.getHandle();
+			BlockButton notchButton = (BlockButton) net.minecraft.server.Block.byId[77];
 
 			try {
 				// Try to call the method directly
 				if (!useReflection) {
-					notchButton.b(craftWorld.getHandle(), block.getX(), block.getY(), block.getZ(), ignored);
+					notchButton.b(server, block.getX(), block.getY(), block.getZ(), ignored);
 					return;
 				}
 				
-			} catch (Exception e) {
+			} catch (NoSuchMethodError e) {
 				// Nope, didn't work.
 				useReflection = true;
 			}
@@ -93,11 +95,14 @@ public class Button {
 			}
 			
 			// Call this method
-			updateMethod.invoke(notchButton, craftWorld.getHandle(), 
+			updateMethod.invoke(notchButton, (World) server, 
 					block.getX(), block.getY(), block.getZ(), ignored);
+			
+			System.out.println("Used reflection!");
 			
 		} catch (Exception ex) {
 			System.err.println("Incompatible CraftBukkit version! " + ex.getMessage());
+			ex.printStackTrace();
 			disableDirectAccess = true;
 		}
 	}
