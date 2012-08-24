@@ -2,6 +2,7 @@ package com.comphenix.pulse;
 
 import java.util.logging.Logger;
 
+import org.bukkit.ChatColor;
 import org.bukkit.Server;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -13,6 +14,8 @@ public class PulseExtenderMod extends JavaPlugin {
 	private static final String COMMAND_PULSE_EXTENDER = "pulseextender";
 	private static final String COMMAND_BUTTON_LENGTH = "buttonlength";
 
+	public static final String ADMIN_PERMISSION = "pulseextender.admin";
+	
 	private Logger currentLogger;
 	
 	// Main listeners
@@ -79,28 +82,44 @@ public class PulseExtenderMod extends JavaPlugin {
 		// Handle commands
 		if (command.getName().equalsIgnoreCase(COMMAND_BUTTON_LENGTH)) {
 			
+			if (!checkPermission(sender))
+				return true;
+				
 			try {
 				double duration = Double.parseDouble(args[0].trim());
 				configuration.setButtonDuration(duration);
 				saveConfig();
 				
 				sender.sendMessage("Updated button duration!");
-				
+
 			} catch (Exception e) {
 				sender.sendMessage("Cannot parse number.");
 			}
 			
 			return true;
 			
-		} else if (command.getName().equalsIgnoreCase(COMMAND_PULSE_EXTENDER)) {
-			
-			sender.sendMessage("Reloaded configuration.");
+		} else if (command.getName().equalsIgnoreCase(COMMAND_PULSE_EXTENDER) && checkPermission(sender)) {
 			
 			// Reload everything
-			reloadOptions(true);
+			if (checkPermission(sender)) {
+				reloadOptions(true);
+				sender.sendMessage("Reloaded configuration.");
+			}
+			
 			return true;
 	
 		} else {
+			return false;
+		}
+	}
+	
+	private boolean checkPermission(CommandSender sender) {
+		
+		// Make sure the sender has permissions
+		if (sender.hasPermission(ADMIN_PERMISSION)) {
+			return true;
+		} else {
+			sender.sendMessage(ChatColor.RED + "You haven't got permission to execute this command.");
 			return false;
 		}
 	}
