@@ -98,8 +98,6 @@ public class Button {
 			updateMethod.invoke(notchButton, (World) server, 
 					block.getX(), block.getY(), block.getZ(), ignored);
 			
-			System.out.println("Used reflection!");
-			
 		} catch (Exception ex) {
 			System.err.println("Incompatible CraftBukkit version! " + ex.getMessage());
 			ex.printStackTrace();
