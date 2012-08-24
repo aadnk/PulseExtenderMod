@@ -17,10 +17,13 @@
 
 package com.comphenix.pulse;
 
+import java.lang.reflect.Method;
 import java.util.Random;
 
 import net.minecraft.server.BlockButton;
+import net.minecraft.server.World;
 
+import org.apache.commons.lang.ArrayUtils;
 import org.bukkit.block.Block;
 import org.bukkit.craftbukkit.CraftWorld;
 
@@ -30,10 +33,14 @@ public class Button {
 	
 	// Whether or not to completely ignore CraftBukkit-only methods
 	private static boolean disableDirectAccess;
+	private static boolean useReflection;
 	
 	// The underlying block
 	private Block block;
 
+	// Reflection method to call
+	private static Method updateMethod;
+	
 	public Button(Block block) {
 		this.block = block;
 	}
@@ -62,17 +69,52 @@ public class Button {
 			return;
 		}
 		
+		Random ignored = new Random();
+		
 		try {
 			
 			CraftWorld craftWorld = (CraftWorld) block.getWorld();
-			BlockButton notchButton = (BlockButton) net.minecraft.server.Block.STONE_BUTTON;
+			BlockButton notchButton = (BlockButton) net.minecraft.server.Block.byId[143];
+
+			try {
+				// Try to call the method directly
+				if (!useReflection) {
+					notchButton.b(craftWorld.getHandle(), block.getX(), block.getY(), block.getZ(), ignored);
+					return;
+				}
+				
+			} catch (Exception e) {
+				// Nope, didn't work.
+				useReflection = true;
+			}
 			
-			notchButton.b(craftWorld.getHandle(), block.getX(), block.getY(), block.getZ(), new Random());
+			if (updateMethod == null) {
+				updateMethod = findObsfucatedMethod(BlockButton.class);
+			}
+			
+			// Call this method
+			updateMethod.invoke(notchButton, craftWorld.getHandle(), 
+					block.getX(), block.getY(), block.getZ(), ignored);
 			
 		} catch (Exception ex) {
 			System.err.println("Incompatible CraftBukkit version! " + ex.getMessage());
 			disableDirectAccess = true;
 		}
+	}
+	
+	private Method findObsfucatedMethod(Class<BlockButton> clazz) {
+		
+		Class<?>[] expected = new Class<?>[] { World.class, int.class, int.class, int.class, Random.class };
+		
+		// Find the correct method to call
+		for (Method method : clazz.getMethods()) {
+			if (ArrayUtils.isEquals(method.getParameterTypes(), expected)) {
+				return method;
+			}
+		}
+		
+		// Damn
+		throw new RuntimeException("Unable to find updateTick-method in BlockButton.");
 	}
 	
 	/**
